@@ -58,6 +58,7 @@ htdocs/pwchange.html
 htdocs/services.html
 htdocs/settings.html
 htdocs/settings.js
+htdocs/touch-test.html
 htdocs/__pycache__/__init__.cpython-312.pyc
 htdocs/css/admin.css
 htdocs/css/bootstrap.min.css

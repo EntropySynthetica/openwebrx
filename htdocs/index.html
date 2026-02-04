@@ -72,7 +72,44 @@
                 <!-- add canvas here by javascript -->
             </div>
         </div>
-        <div id="openwebrx-panels-container">
+        <!-- Mobile-friendly controls panel -->
+        <div id="openwebrx-mobile-controls" style="display: none;">
+            <div class="mobile-controls-row">
+                <button onclick="zoomOutOneStep()" title="Zoom out waterfall" class="mobile-btn">Z−</button>
+                <button onclick="zoomInOneStep()" title="Zoom in waterfall" class="mobile-btn">Z+</button>
+                <button onclick="toggleMobileWFControls()" title="Waterfall settings" class="mobile-btn">WF</button>
+                <button onclick="toggleMobileBWControls()" title="Filter bandwidth" class="mobile-btn">BW</button>
+            </div>
+            <div id="mobile-wf-controls" style="display: none;">
+                <div class="mobile-slider-row">
+                    <label>WF Min:</label>
+                    <input type="range" id="mobile-wf-min" min="-150" max="-20" value="-100" step="1" 
+                           oninput="updateMobileWFMin(this.value);">
+                    <span id="mobile-wf-min-val">-100</span>
+                </div>
+                <div class="mobile-slider-row">
+                    <label>WF Max:</label>
+                    <input type="range" id="mobile-wf-max" min="-150" max="0" value="-30" step="1"
+                           oninput="updateMobileWFMax(this.value);">
+                    <span id="mobile-wf-max-val">-30</span>
+                </div>
+            </div>
+            <div id="mobile-bw-controls" style="display: none;">
+                <div class="mobile-slider-row">
+                    <label>Low Cut:</label>
+                    <input type="range" id="mobile-bw-low" min="-4000" max="0" value="-500" step="50"
+                           oninput="updateMobileBandwidth();">
+                    <span id="mobile-bw-low-val">-500</span>
+                </div>
+                <div class="mobile-slider-row">
+                    <label>High Cut:</label>
+                    <input type="range" id="mobile-bw-high" min="0" max="4000" value="500" step="50"
+                           oninput="updateMobileBandwidth();">
+                    <span id="mobile-bw-high-val">500</span>
+                </div>
+            </div>
+        </div>
+        <div id="openwebrx-panels-container"
             <div id="openwebrx-panels-container-left">
                 <div class="openwebrx-panel openwebrx-message-panel" id="openwebrx-panel-sstv-message" style="display: none; width: 619px;" data-panel-name="sstv-message"></div>
                 <div class="openwebrx-panel openwebrx-message-panel" id="openwebrx-panel-fax-message" style="display: none; width: 619px;" data-panel-name="fax-message"></div>

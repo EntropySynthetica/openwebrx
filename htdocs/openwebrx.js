@@ -868,9 +868,12 @@ function canvas_touchEnd(evt) {
     // Use the last known position for frequency setting
     if (!canvas_drag && canvas_mouse_down) {
         // Single tap - set frequency (like a click)
-        // Calculate relative position from pageX
+        // Calculate relative position from the canvas container
         var container = canvas_container.getBoundingClientRect();
-        var relX = canvas_drag_start_x - container.left - zoom_offset_px;
+        var canvas_rect = canvases[0].getBoundingClientRect();
+        
+        // Get position relative to the actual canvas, accounting for zoom
+        var relX = canvas_drag_start_x - canvas_rect.left;
         
         UI.setFrequency(UI.getFrequency(relX));
         UI.toggleScanner(false);
@@ -1961,3 +1964,101 @@ function tuning_step_reset() {
     $('#openwebrx-tuning-step-listbox').val(tuning_step_default);
     tuning_step = tuning_step_default;
 }
+// ========================================================
+// ============  MOBILE CONTROLS FUNCTIONS  ==============
+// ========================================================
+
+// Show mobile controls if on mobile device
+function initMobileControls() {
+    console.log('initMobileControls called, isMobile:', isMobile());
+    if (isMobile()) {
+        $('#openwebrx-mobile-controls').show();
+        console.log('Mobile controls shown');
+        
+        // Initialize sliders from current waterfall/demod settings
+        var wfRange = Waterfall.getRange();
+        $('#mobile-wf-min').val(wfRange.min);
+        $('#mobile-wf-max').val(wfRange.max);
+        $('#mobile-wf-min-val').text(wfRange.min);
+        $('#mobile-wf-max-val').text(wfRange.max);
+        
+        // Initialize bandwidth controls
+        updateMobileBandwidthDisplay();
+    }
+}
+
+function toggleMobileWFControls() {
+    var wfControls = $('#mobile-wf-controls');
+    var bwControls = $('#mobile-bw-controls');
+    
+    if (wfControls.is(':visible')) {
+        wfControls.slideUp(200);
+    } else {
+        bwControls.slideUp(200);
+        wfControls.slideDown(200);
+    }
+}
+
+function toggleMobileBWControls() {
+    console.log('toggleMobileBWControls called');
+    var wfControls = $('#mobile-wf-controls');
+    var bwControls = $('#mobile-bw-controls');
+    
+    if (bwControls.is(':visible')) {
+        bwControls.slideUp(200);
+    } else {
+        wfControls.slideUp(200);
+        bwControls.slideDown(200);
+        updateMobileBandwidthDisplay();
+    }
+}
+
+function updateMobileWFMin(value) {
+    $('#mobile-wf-min-val').text(value);
+    $('#openwebrx-waterfall-color-min').val(value).trigger('change');
+}
+
+function updateMobileWFMax(value) {
+    $('#mobile-wf-max-val').text(value);
+    $('#openwebrx-waterfall-color-max').val(value).trigger('change');
+}
+
+function updateMobileBandwidth() {
+    var lowCut = parseInt($('#mobile-bw-low').val());
+    var highCut = parseInt($('#mobile-bw-high').val());
+    
+    $('#mobile-bw-low-val').text(lowCut + ' Hz');
+    $('#mobile-bw-high-val').text(highCut + ' Hz');
+    
+    var demodulators = getDemodulators();
+    if (demodulators.length > 0) {
+        demodulators[0].setBandpass({
+            low_cut: lowCut,
+            high_cut: highCut
+        });
+    }
+}
+
+function updateMobileBandwidthDisplay() {
+    try {
+        var demodulators = getDemodulators();
+        if (demodulators && demodulators.length > 0) {
+            var bp = demodulators[0].getBandpass();
+            if (bp) {
+                $('#mobile-bw-low').val(bp.low_cut);
+                $('#mobile-bw-high').val(bp.high_cut);
+                $('#mobile-bw-low-val').text(bp.low_cut + ' Hz');
+                $('#mobile-bw-high-val').text(bp.high_cut + ' Hz');
+            }
+        }
+    } catch (e) {
+        console.error('Error updating mobile bandwidth display:', e);
+    }
+}
+
+// Call this when OpenWebRX initializes
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        initMobileControls();
+    }, 2000);  // Wait for waterfall to be ready
+});

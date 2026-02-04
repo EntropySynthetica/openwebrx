@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Touch Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial; }
+        #testarea {
+            width: 100%;
+            height: 300px;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            touch-action: none;
+            user-select: none;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            background: #eee;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .entry { 
+            padding: 5px; 
+            border-bottom: 1px solid #ccc;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Touch Event Test</h1>
+    <div id="testarea">Touch or Click Here</div>
+    <div id="log"></div>
+    
+    <script>
+        var testarea = document.getElementById('testarea');
+        var log = document.getElementById('log');
+        
+        function addLog(msg) {
+            var entry = document.createElement('div');
+            entry.className = 'entry';
+            entry.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+            log.insertBefore(entry, log.firstChild);
+        }
+        
+        // Test if touch is supported
+        addLog('Touch supported: ' + ('ontouchstart' in window));
+        addLog('Max touch points: ' + navigator.maxTouchPoints);
+        addLog('User agent: ' + navigator.userAgent);
+        
+        // Touch events
+        testarea.addEventListener('touchstart', function(e) {
+            addLog('TOUCHSTART - touches: ' + e.touches.length + ', pageX: ' + e.touches[0].pageX);
+            testarea.textContent = 'Touch Start!';
+            e.preventDefault();
+        }, {passive: false});
+        
+        testarea.addEventListener('touchmove', function(e) {
+            addLog('TOUCHMOVE - touches: ' + e.touches.length);
+            e.preventDefault();
+        }, {passive: false});
+        
+        testarea.addEventListener('touchend', function(e) {
+            addLog('TOUCHEND');
+            testarea.textContent = 'Touch End!';
+            setTimeout(function() {
+                testarea.textContent = 'Touch or Click Here';
+            }, 1000);
+            e.preventDefault();
+        }, {passive: false});
+        
+        // Mouse events as fallback
+        testarea.addEventListener('mousedown', function(e) {
+            addLog('MOUSEDOWN - pageX: ' + e.pageX);
+            testarea.textContent = 'Mouse Down!';
+        });
+        
+        testarea.addEventListener('mouseup', function(e) {
+            addLog('MOUSEUP');
+            testarea.textContent = 'Mouse Up!';
+            setTimeout(function() {
+                testarea.textContent = 'Touch or Click Here';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

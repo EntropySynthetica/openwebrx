@@ -23,6 +23,15 @@
 
 */
 
+// Show initial info when waterfall initializes
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        showTouchDebug('OpenWebRX JS Loaded!');
+        showTouchDebug('isMobile: ' + isMobile());
+        showTouchDebug('Touch: ' + ('ontouchstart' in window));
+    }, 1000);
+});
+
 is_firefox = navigator.userAgent.indexOf("Firefox") >= 0;
 
 var bandwidth;
@@ -213,9 +222,12 @@ function scale_setup() {
     scale_canvas.addEventListener("mousemove", scale_canvas_mousemove, false);
     scale_canvas.addEventListener("mouseup", scale_canvas_mouseup, false);
     scale_canvas.addEventListener("wheel", scale_canvas_mousewheel, false);
-    scale_canvas.addEventListener("touchmove", process_touch, false);
-    scale_canvas.addEventListener("touchend", process_touch, false);
-    scale_canvas.addEventListener("touchstart", process_touch, false);
+    
+    // Always register touch handlers for mobile support
+    scale_canvas.addEventListener("touchstart", scale_canvas_touchStart, {passive: false});
+    scale_canvas.addEventListener("touchmove", scale_canvas_touchMove, {passive: false});
+    scale_canvas.addEventListener("touchend", scale_canvas_touchEnd, {passive: false});
+    
     resize_scale();
     var frequency_container = $("#openwebrx-frequency-container");
     frequency_container.on("mousemove", frequency_container_mousemove, false);
@@ -299,6 +311,56 @@ function scale_canvas_mousewheel(evt) {
     for (var i = 0; i < demodulators.length; i++) event_handled |= demodulators[i].envelope.wheel(evt.pageX, dir, adjustWidth);
     // If not handled by demodulators, default to tuning or zooming
     if (!event_handled) canvas_mousewheel(evt);
+}
+
+// Touch handlers for scale canvas (based on KiwiSDR)
+function scale_canvas_touchStart(evt) {
+    if (evt.touches.length === 1) {
+        var touch = evt.touches[0];
+        var x = Math.round(touch.pageX);
+        
+        scale_canvas_drag_params.mouse_down = true;
+        scale_canvas_drag_params.drag = false;
+        scale_canvas_drag_params.start_x = x;
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+}
+
+function scale_canvas_touchMove(evt) {
+    if (evt.touches.length === 1 && scale_canvas_drag_params.mouse_down) {
+        var touch = evt.touches[0];
+        var x = Math.round(touch.pageX);
+        
+        if (!scale_canvas_drag_params.drag && Math.abs(x - scale_canvas_drag_params.start_x) > 10) {
+            scale_canvas_drag_params.drag = true;
+        }
+        
+        if (scale_canvas_drag_params.drag) {
+            scale_canvas_mousemove({pageX: x, pageY: touch.pageY});
+        }
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+}
+
+function scale_canvas_touchEnd(evt) {
+    if (!scale_canvas_drag_params.drag && scale_canvas_drag_params.mouse_down) {
+        // Single tap - set frequency directly
+        var touch = evt.changedTouches[0];
+        var x = Math.round(touch.pageX);
+        
+        var container = $("#openwebrx-frequency-container")[0].getBoundingClientRect();
+        var relativeX = x - container.left - zoom_offset_px;
+        
+        UI.setFrequency(UI.getFrequency(relativeX));
+        UI.toggleScanner(false);
+    }
+    
+    scale_canvas_drag_params.mouse_down = false;
+    scale_canvas_drag_params.drag = false;
+    evt.preventDefault();
+    evt.stopPropagation();
 }
 
 function scale_px_from_freq(f, range) {
@@ -528,6 +590,14 @@ var touch_id2 = -1;
 var touch_zoom0;
 var touch_dst0;
 
+// Mobile detection helper
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           ('ontouchstart' in window) || 
+           (navigator.maxTouchPoints > 0);
+}
+
+// Simplified process_touch - just for two-finger pinch zoom
 function process_touch(evt) {
     var t0 = null;
     var type = "";
@@ -732,6 +802,87 @@ function canvas_mouseup(evt) {
 function canvas_end_drag() {
     canvas_container.style.cursor = "crosshair";
     canvas_mouse_down = false;
+}
+
+// Dedicated touch event handlers for improved mobile support (based on KiwiSDR)
+function canvas_touchStart(evt) {
+    var touches = evt.touches.length;
+    
+    if (touches == 1) {
+        // Single touch - like mousedown
+        var touch = evt.touches[0];
+        var x = Math.round(touch.pageX);
+        var y = Math.round(touch.pageY);
+        
+        canvas_mouse_down = true;
+        canvas_drag = false;
+        canvas_drag_last_x = canvas_drag_start_x = x;
+        canvas_drag_last_y = canvas_drag_start_y = y;
+    }
+    
+    evt.preventDefault();
+    evt.stopPropagation();
+}
+
+function canvas_touchMove(evt) {
+    if (!waterfall_setup_done) return;
+    
+    if (evt.touches.length === 1 && canvas_mouse_down) {
+        var touch = evt.touches[0];
+        var x = Math.round(touch.pageX);
+        var y = Math.round(touch.pageY);
+        
+        // Start dragging if moved enough
+        if (!canvas_drag && Math.abs(x - canvas_drag_start_x) > canvas_drag_min_delta) {
+            canvas_drag = true;
+            canvas_container.style.cursor = "move";
+        }
+        
+        if (canvas_drag) {
+            var deltaX = canvas_drag_last_x - x;
+            var dpx = range.hps * deltaX;
+
+            if (
+                !(zoom_center_rel + dpx > (bandwidth / 2 - waterfallWidth() * (1 - zoom_center_where) * range.hps)) &&
+                !(zoom_center_rel + dpx < -bandwidth / 2 + waterfallWidth() * zoom_center_where * range.hps)
+            ) {
+                zoom_center_rel += dpx;
+            }
+            resize_canvases(false);
+            mkscale();
+            bandplan.draw();
+            bookmarks.position();
+
+            canvas_drag_last_x = x;
+            canvas_drag_last_y = y;
+        }
+    }
+    
+    evt.preventDefault();
+    evt.stopPropagation();
+}
+
+function canvas_touchEnd(evt) {
+    if (!waterfall_setup_done) return;
+    
+    // Use the last known position for frequency setting
+    if (!canvas_drag && canvas_mouse_down) {
+        // Single tap - set frequency (like a click)
+        // Calculate relative position from pageX
+        var container = canvas_container.getBoundingClientRect();
+        var relX = canvas_drag_start_x - container.left - zoom_offset_px;
+        
+        UI.setFrequency(UI.getFrequency(relX));
+        UI.toggleScanner(false);
+    } else if (canvas_drag) {
+        canvas_end_drag();
+    }
+    
+    canvas_mouse_down = false;
+    canvas_drag = false;
+    
+    evt.preventDefault();
+    evt.stopPropagation();
 }
 
 function zoom_center_where_calc(screenposX) {
@@ -1314,14 +1465,18 @@ function add_canvas() {
 
 function init_canvas_container() {
     canvas_container = $("#webrx-canvas-container")[0];
+    
     canvas_container.addEventListener("mouseleave", canvas_container_mouseleave, false);
     canvas_container.addEventListener("mousemove", canvas_mousemove, false);
     canvas_container.addEventListener("mouseup", canvas_mouseup, false);
     canvas_container.addEventListener("mousedown", canvas_mousedown, false);
     canvas_container.addEventListener("wheel", canvas_mousewheel, false);
-    canvas_container.addEventListener("touchmove", process_touch, false);
-    canvas_container.addEventListener("touchend", process_touch, false);
-    canvas_container.addEventListener("touchstart", process_touch, false);
+    
+    // Touch handlers for mobile support - using capture mode to ensure they receive events
+    canvas_container.addEventListener("touchstart", canvas_touchStart, {passive: false, capture: true});
+    canvas_container.addEventListener("touchmove", canvas_touchMove, {passive: false, capture: true});
+    canvas_container.addEventListener("touchend", canvas_touchEnd, {passive: false, capture: true});
+    
     var frequency_container = $("#openwebrx-frequency-container");
     frequency_container.on("wheel", canvas_mousewheel, false);
 }
@@ -1585,9 +1740,13 @@ function initSpectrum() {
     canvas.addEventListener("mousemove", canvas_mousemove, false);
     canvas.addEventListener("mouseup", canvas_mouseup, false);
     canvas.addEventListener("wheel", canvas_mousewheel, false);
-    canvas.addEventListener("touchmove", process_touch, false);
-    canvas.addEventListener("touchend", process_touch, false);
-    canvas.addEventListener("touchstart", process_touch, false);
+    
+    // Always register touch handlers for mobile support
+    console.log('Registering touch handlers for spectrum canvas');
+    canvas.addEventListener("touchstart", canvas_touchStart, {passive: false});
+    canvas.addEventListener("touchmove", canvas_touchMove, {passive: false});
+    canvas.addEventListener("touchend", canvas_touchEnd, {passive: false});
+
 
     // Create spectrum display
     spectrum = new Spectrum(canvas, 150);
@@ -1802,3 +1961,89 @@ function tuning_step_reset() {
     $('#openwebrx-tuning-step-listbox').val(tuning_step_default);
     tuning_step = tuning_step_default;
 }
+// ========================================================
+// ============  MOBILE CONTROLS FUNCTIONS  ==============
+// ========================================================
+
+// Show mobile controls if on mobile device
+function initMobileControls() {
+    if (isMobile()) {
+        $('#openwebrx-mobile-controls').show();
+        
+        // Initialize sliders from current waterfall/demod settings
+        var wfRange = Waterfall.getRange();
+        $('#mobile-wf-min').val(wfRange.min);
+        $('#mobile-wf-max').val(wfRange.max);
+        $('#mobile-wf-min-val').text(wfRange.min);
+        $('#mobile-wf-max-val').text(wfRange.max);
+        
+        // Initialize bandwidth controls
+        updateMobileBandwidthDisplay();
+    }
+}
+
+function toggleMobileWFControls() {
+    var wfControls = $('#mobile-wf-controls');
+    var bwControls = $('#mobile-bw-controls');
+    
+    if (wfControls.is(':visible')) {
+        wfControls.slideUp(200);
+    } else {
+        bwControls.slideUp(200);
+        wfControls.slideDown(200);
+    }
+}
+
+function toggleMobileBWControls() {
+    var wfControls = $('#mobile-wf-controls');
+    var bwControls = $('#mobile-bw-controls');
+    
+    if (bwControls.is(':visible')) {
+        bwControls.slideUp(200);
+    } else {
+        wfControls.slideUp(200);
+        bwControls.slideDown(200);
+        updateMobileBandwidthDisplay();
+    }
+}
+
+function updateMobileWFMin(value) {
+    $('#mobile-wf-min-val').text(value);
+    $('#openwebrx-waterfall-color-min').val(value).trigger('change');
+}
+
+function updateMobileWFMax(value) {
+    $('#mobile-wf-max-val').text(value);
+    $('#openwebrx-waterfall-color-max').val(value).trigger('change');
+}
+
+function updateMobileBandwidth() {
+    var lowCut = parseInt($('#mobile-bw-low').val());
+    var highCut = parseInt($('#mobile-bw-high').val());
+    
+    $('#mobile-bw-low-val').text(lowCut + ' Hz');
+    $('#mobile-bw-high-val').text(highCut + ' Hz');
+    
+    var demodulators = getDemodulators();
+    if (demodulators.length > 0) {
+        demodulators[0].setBandpass(lowCut, highCut);
+    }
+}
+
+function updateMobileBandwidthDisplay() {
+    var demodulators = getDemodulators();
+    if (demodulators.length > 0) {
+        var bp = demodulators[0].getBandpass();
+        $('#mobile-bw-low').val(bp.low_cut);
+        $('#mobile-bw-high').val(bp.high_cut);
+        $('#mobile-bw-low-val').text(bp.low_cut + ' Hz');
+        $('#mobile-bw-high-val').text(bp.high_cut + ' Hz');
+    }
+}
+
+// Call this when OpenWebRX initializes
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        initMobileControls();
+    }, 2000);  // Wait for waterfall to be ready
+});

@@ -127,8 +127,9 @@ UI.getCwOffset = function() {
 };
 
 UI.getCwBandpass = function() {
-    var cwOffset = this.getCwOffset();
-    return { low_cut: cwOffset - 100, high_cut: cwOffset + 100 };
+    // CW filter: 300 Hz low cut, 700 Hz high cut (400 Hz bandwidth)
+    // This assumes a 500 Hz sidetone offset
+    return { low_cut: 300, high_cut: 700 };
 };
 
 UI.getOffsetFrequency = function(x) {
