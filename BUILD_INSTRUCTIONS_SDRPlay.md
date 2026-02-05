@@ -41,18 +41,18 @@ python openwebrx.py
 
 **Managing the systemd service:**
 ```bash
-sudo systemctl start openwebrx-erica    # Start
-sudo systemctl stop openwebrx-erica     # Stop
-sudo systemctl restart openwebrx-erica  # Restart
-sudo systemctl status openwebrx-erica   # Check status
-sudo journalctl -u openwebrx-erica -f   # View logs
+sudo systemctl start openwebrx-custom    # Start
+sudo systemctl stop openwebrx-custom     # Stop
+sudo systemctl restart openwebrx-custom  # Restart
+sudo systemctl status openwebrx-custom   # Check status
+sudo journalctl -u openwebrx-custom -f   # View logs
 ```
 
 **After making code changes:**
 ```bash
 # Code changes are immediate when running from repo
 # Just restart the service:
-sudo systemctl restart openwebrx-erica
+sudo systemctl restart openwebrx-custom
 ```
 
 ---
@@ -342,29 +342,29 @@ You should see your SDRPlay RSP1B listed and functional.
 
 ### 12. Set Up Systemd Service (Optional)
 
-A custom systemd service file `openwebrx-erica.service` is included that runs OpenWebRX from the repository:
+A custom systemd service file `openwebrx-custom.service` is included that runs OpenWebRX from the repository:
 
 ```bash
 # Copy the custom service file
-sudo cp ~/repos/openwebrx/openwebrx-erica.service /etc/systemd/system/
+sudo cp ~/repos/openwebrx/openwebrx-custom.service /etc/systemd/system/
 
 # Reload systemd
 sudo systemctl daemon-reload
 
 # Enable and start the service
-sudo systemctl enable openwebrx-erica
-sudo systemctl start openwebrx-erica
+sudo systemctl enable openwebrx-custom
+sudo systemctl start openwebrx-custom
 
 # Check status
-sudo systemctl status openwebrx-erica
+sudo systemctl status openwebrx-custom
 
 # View logs
-sudo journalctl -u openwebrx-erica -f
+sudo journalctl -u openwebrx-custom -f
 ```
 
 **Service Configuration:**
 
-The `openwebrx-erica.service` file runs OpenWebRX directly from the repository:
+The `openwebrx-custom.service` file runs OpenWebRX directly from the repository:
 
 ```ini
 [Unit]
@@ -388,12 +388,12 @@ This runs the application with system Python but from the repository directory, 
 
 **To stop the service:**
 ```bash
-sudo systemctl stop openwebrx-erica
+sudo systemctl stop openwebrx-custom
 ```
 
 **To restart after code changes:**
 ```bash
-sudo systemctl restart openwebrx-erica
+sudo systemctl restart openwebrx-custom
 ```
 
 ## Troubleshooting
@@ -446,10 +446,10 @@ source env/bin/activate
 python openwebrx.py
 
 # If running as a service, restart it:
-sudo systemctl restart openwebrx-erica
+sudo systemctl restart openwebrx-custom
 
 # Watch the logs to verify:
-sudo journalctl -u openwebrx-erica -f
+sudo journalctl -u openwebrx-custom -f
 ```
 
 **For changes to installed dependencies (csdr, pycsdr, js8py, owrx_connector):**
@@ -466,7 +466,7 @@ make -j$(nproc)
 sudo make install
 
 # Then restart OpenWebRX:
-sudo systemctl restart openwebrx-erica
+sudo systemctl restart openwebrx-custom
 ```
 
 ### Device Not Found
@@ -515,7 +515,7 @@ which openwebrx  # Should show ~/repos/openwebrx/env/bin/openwebrx
 openwebrx --version  # Should show 1.2.106
 
 # Check service status (if running)
-systemctl status openwebrx-erica
+systemctl status openwebrx-custom
 ```
 
 ## Package Versions (Reference)
@@ -553,7 +553,7 @@ After successful installation, you should have:
 - C/C++ components (csdr, owrx_connector) are installed system-wide to `/usr/local/bin/`
 - Python packages (js8py, OpenWebRX) are installed in the virtual environment
 - pycsdr is installed both system-wide and in venv for compatibility
-- The `openwebrx-erica.service` systemd service runs OpenWebRX from the repository directory
+- The `openwebrx-custom.service` systemd service runs OpenWebRX from the repository directory
 - PPA-installed connectors (soapy-connector, rtl-connector, etc.) can coexist with this setup
 
 ## Additional Features in OpenWebRX Plus
@@ -613,14 +613,14 @@ These instructions were verified against an actual build completed on **February
 6. **12:40** - pycsdr built with setup.py and installed system-wide
 7. **12:37** - js8py built and installed into venv
 8. **14:19** - openwebrx installed into venv with pip install
-9. **20:10** - openwebrx-erica.service started and has been running successfully
+9. **20:10** - openwebrx-custom.service started and has been running successfully
 
 **Key Setup Details:**
 - Virtual environment: `~/repos/openwebrx/env/`
 - C binaries (csdr, connectors): `/usr/local/bin/`
 - Python packages: Virtual environment and system-wide (pycsdr)
 - Running method: From repository with `python openwebrx.py`
-- Service: `openwebrx-erica.service` runs from repo directory
+- Service: `openwebrx-custom.service` runs from repo directory
 - Configuration: `~/repos/openwebrx/config_webrx.py` and `/etc/openwebrx/`
 
 All components were successfully built and tested with an SDRPlay RSP1B device.
