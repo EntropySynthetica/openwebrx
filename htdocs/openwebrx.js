@@ -978,6 +978,9 @@ function zoom_set(level) {
     mkscale();
     bandplan.draw();
     bookmarks.position();
+    
+    // Save zoom level to localStorage
+    LS.save('zoom_level', zoom_level);
 }
 
 function zoom_calc() {
@@ -1094,9 +1097,25 @@ function on_ws_recv(evt) {
 
                         if ('sdr_id' in config || 'profile_id' in config || 'waterfall_levels' in config) {
                             Waterfall.setDefaultRange();
+                            
+                            // Restore saved waterfall levels after setDefaultRange
+                            if (LS.has('waterfall_min') && LS.has('waterfall_max')) {
+                                var savedMin = LS.loadInt('waterfall_min', -100);
+                                var savedMax = LS.loadInt('waterfall_max', 0);
+                                Waterfall.levels.min = savedMin;
+                                Waterfall.levels.max = savedMax;
+                                Waterfall.updateSliders();
+                            }
                         }
 
-                        if ('tuning_precision' in config)
+                        // Always restore saved zoom level after potential zoom_set(0) call
+                        // Use setTimeout to ensure zoom_levels array is fully populated
+                        setTimeout(function() {
+                            if (LS.has('zoom_level')) {
+                                var savedZoom = LS.loadInt('zoom_level', 0);
+                                zoom_set(savedZoom);
+                            }
+                        }, 100);
                             demodulatorPanel.setTuningPrecision(config['tuning_precision']);
 
                         if ('tuning_step' in config) {

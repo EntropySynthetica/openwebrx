@@ -79,6 +79,10 @@ Waterfall.updateColors = function(which) {
     }
 
     this.updateSliders();
+    
+    // Save waterfall levels to localStorage
+    LS.save('waterfall_min', this.levels.min);
+    LS.save('waterfall_max', this.levels.max);
 };
 
 // Update waterfall level sliders from min/max levels.

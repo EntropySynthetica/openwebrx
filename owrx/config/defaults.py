@@ -161,6 +161,14 @@ defaultConfig = PropertyLayer(
             rf_gain="auto",
             profiles=PropertyLayer(
                 **{
+                    "40m": PropertyLayer(
+                        name="40m",
+                        center_freq=7150000,
+                        samp_rate=500000,
+                        start_freq=7050000,
+                        start_mod="cw",
+                        tuning_step="500",
+                    ),
                     "70cm": PropertyLayer(
                         name="70cm Repeaters",
                         center_freq=443500000,
@@ -247,14 +255,6 @@ defaultConfig = PropertyLayer(
                         samp_rate=250000,
                         start_freq=10142000,
                         start_mod="usb",
-                        tuning_step="500",
-                    ),
-                    "40m": PropertyLayer(
-                        name="40m",
-                        center_freq=7150000,
-                        samp_rate=500000,
-                        start_freq=7050000,
-                        start_mod="cw",
                         tuning_step="500",
                     ),
                     "60m": PropertyLayer(
