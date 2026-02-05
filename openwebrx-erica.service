@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenWebRX WebSDR receiver
+After=network.target
+
+[Service]
+Type=simple
+User=erica
+Group=erica
+WorkingDirectory=/home/erica/repos/openwebrx
+ExecStart=/usr/bin/python3 /home/erica/repos/openwebrx/openwebrx.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

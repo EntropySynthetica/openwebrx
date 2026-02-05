@@ -63,6 +63,45 @@ The following methods of setting up a receiver are currently available:
 Please checkout the [setup guide on the wiki](https://github.com/jketterl/openwebrx/wiki/Setup-Guide) for more details
 on the respective methods.
 
+### Running as a Systemd Service
+
+To run OpenWebRX as a systemd service that starts automatically on boot:
+
+1. Copy the service file to systemd directory:
+   ```bash
+   sudo cp /home/erica/repos/openwebrx/openwebrx-erica.service /etc/systemd/system/
+   ```
+
+2. Reload systemd to recognize the new service:
+   ```bash
+   sudo systemctl daemon-reload
+   ```
+
+3. Enable the service to start on boot:
+   ```bash
+   sudo systemctl enable openwebrx-erica
+   ```
+
+4. Start the service:
+   ```bash
+   sudo systemctl start openwebrx-erica
+   ```
+
+5. Check service status:
+   ```bash
+   sudo systemctl status openwebrx-erica
+   ```
+
+6. Stop the service:
+   ```bash
+   sudo systemctl stop openwebrx-erica
+   ```
+
+7. View service logs:
+   ```bash
+   sudo journalctl -u openwebrx-erica -f
+   ```
+
 ## Community
 
 If you have trouble setting up or configuring your receiver, you have some great idea you want to see implemented, or
