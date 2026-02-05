@@ -1968,51 +1968,6 @@ function tuning_step_reset() {
 // ============  MOBILE CONTROLS FUNCTIONS  ==============
 // ========================================================
 
-// Show mobile controls if on mobile device
-function initMobileControls() {
-    console.log('initMobileControls called, isMobile:', isMobile());
-    if (isMobile()) {
-        $('#openwebrx-mobile-controls').show();
-        console.log('Mobile controls shown');
-        
-        // Initialize sliders from current waterfall/demod settings
-        var wfRange = Waterfall.getRange();
-        $('#mobile-wf-min').val(wfRange.min);
-        $('#mobile-wf-max').val(wfRange.max);
-        $('#mobile-wf-min-val').text(wfRange.min);
-        $('#mobile-wf-max-val').text(wfRange.max);
-        
-        // Initialize bandwidth controls
-        updateMobileBandwidthDisplay();
-    }
-}
-
-function toggleMobileWFControls() {
-    var wfControls = $('#mobile-wf-controls');
-    var bwControls = $('#mobile-bw-controls');
-    
-    if (wfControls.is(':visible')) {
-        wfControls.slideUp(200);
-    } else {
-        bwControls.slideUp(200);
-        wfControls.slideDown(200);
-    }
-}
-
-function toggleMobileBWControls() {
-    console.log('toggleMobileBWControls called');
-    var wfControls = $('#mobile-wf-controls');
-    var bwControls = $('#mobile-bw-controls');
-    
-    if (bwControls.is(':visible')) {
-        bwControls.slideUp(200);
-    } else {
-        wfControls.slideUp(200);
-        bwControls.slideDown(200);
-        updateMobileBandwidthDisplay();
-    }
-}
-
 function updateMobileWFMin(value) {
     $('#mobile-wf-min-val').text(value);
     $('#openwebrx-waterfall-color-min').val(value).trigger('change');
@@ -2056,9 +2011,14 @@ function updateMobileBandwidthDisplay() {
     }
 }
 
-// Call this when OpenWebRX initializes
+// Initialize mobile controls values when waterfall is ready
 window.addEventListener('load', function() {
     setTimeout(function() {
-        initMobileControls();
+        var wfRange = Waterfall.getRange();
+        $('#mobile-wf-min').val(wfRange.min);
+        $('#mobile-wf-max').val(wfRange.max);
+        $('#mobile-wf-min-val').text(wfRange.min);
+        $('#mobile-wf-max-val').text(wfRange.max);
+        updateMobileBandwidthDisplay();
     }, 2000);  // Wait for waterfall to be ready
 });
