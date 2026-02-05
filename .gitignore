@@ -3,3 +3,6 @@
 tags
 .idea
 packages
+env/
+build/
+*.egg-info/
