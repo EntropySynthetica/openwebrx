@@ -401,6 +401,10 @@ Demodulator.prototype.setBandpass = function(bandpass) {
     this.low_cut = bandpass.low_cut;
     this.high_cut = bandpass.high_cut;
     this.set();
+    // Update mobile controls display
+    if (typeof updateMobileBandwidthDisplay === 'function') {
+        updateMobileBandwidthDisplay();
+    }
 };
 
 Demodulator.prototype.disableBandpass = function() {
@@ -436,6 +440,11 @@ Demodulator.prototype.moveBandpass = function(low_new, high_new) {
     this.low_cut  = low_new;
     this.high_cut = high_new;
     this.set();
+    
+    // Update mobile controls display
+    if (typeof updateMobileBandwidthDisplay === 'function') {
+        updateMobileBandwidthDisplay();
+    }
 };
 
 Demodulator.prototype.getBandpass = function() {

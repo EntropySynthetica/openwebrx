@@ -168,6 +168,11 @@ DemodulatorPanel.prototype.setMode = function(requestedModulation, underlyingMod
     this.updateButtons();
     this.updatePanels();
     this.updateHash();
+    
+    // Update mobile controls bandwidth display when mode changes
+    if (typeof updateMobileBandwidthDisplay === 'function') {
+        updateMobileBandwidthDisplay();
+    }
 };
 
 DemodulatorPanel.prototype.disableDigiMode = function() {
