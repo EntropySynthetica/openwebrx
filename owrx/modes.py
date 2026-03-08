@@ -153,6 +153,8 @@ class Modes(object):
         AnalogMode(
             "freedv", "FreeDV", bandpass=Bandpass(300, 3000), requirements=["digital_voice_freedv"], squelch=False
         ),
+        AnalogMode("radel", "RADEL", bandpass=Bandpass(-3000, -300), requirements=["digital_voice_rade"], squelch=False),
+        AnalogMode("radeu", "RADEU", bandpass=Bandpass(300, 3000), requirements=["digital_voice_rade"], squelch=False),
         #AnalogMode("drm", "DRM", bandpass=Bandpass(-5000, 5000), requirements=["drm"], squelch=False),
         # AnalogMode("dab", "DAB", bandpass=None, ifRate=2048000, requirements=["dab"], squelch=False),
         AnalogMode("hdr", "HDR", bandpass=Bandpass(-200000, 200000), requirements=["hdradio"], squelch=False),
