@@ -11,7 +11,7 @@ class Bandpass(object):
 
 
 class Mode:
-    def __init__(self, modulation: str, name: str, bandpass: Bandpass = None, ifRate=None, requirements=None, service=False, squelch=True):
+    def __init__(self, modulation: str, name: str, bandpass: Bandpass = None, ifRate=None, requirements=None, service=False, squelch=True, mobile=True):
         self.modulation = modulation
         self.name = name
         self.requirements = requirements if requirements is not None else []
@@ -19,6 +19,7 @@ class Mode:
         self.bandpass = bandpass
         self.ifRate = ifRate
         self.squelch = squelch
+        self.mobile = mobile
 
     def is_available(self):
         fd = FeatureDetector()
@@ -155,9 +156,9 @@ class Modes(object):
         ),
         AnalogMode("radel", "RADEL", bandpass=Bandpass(-3000, -300), requirements=["digital_voice_rade"], squelch=False),
         AnalogMode("radeu", "RADEU", bandpass=Bandpass(300, 3000), requirements=["digital_voice_rade"], squelch=False),
-        #AnalogMode("drm", "DRM", bandpass=Bandpass(-5000, 5000), requirements=["drm"], squelch=False),
-        # AnalogMode("dab", "DAB", bandpass=None, ifRate=2048000, requirements=["dab"], squelch=False),
-        AnalogMode("hdr", "HDR", bandpass=Bandpass(-200000, 200000), requirements=["hdradio"], squelch=False),
+        AnalogMode("drm", "DRM", bandpass=Bandpass(-5000, 5000), requirements=["drm"], squelch=False, mobile=False),
+        AnalogMode("dab", "DAB", bandpass=None, ifRate=2048000, requirements=["dab"], squelch=False, mobile=False),
+        AnalogMode("hdr", "HDR", bandpass=Bandpass(-200000, 200000), requirements=["hdradio"], squelch=False, mobile=False),
         DigitalMode("bpsk31", "BPSK31", underlying=["usb"]),
         DigitalMode("bpsk63", "BPSK63", underlying=["usb"]),
         DigitalMode("rtty170", "RTTY-170 (45)", underlying=["usb", "lsb"]),

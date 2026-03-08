@@ -559,6 +559,7 @@ class OpenWebRxReceiverClient(OpenWebRxClient, SdrSourceEventClient):
                 "type": "digimode" if isinstance(m, DigitalMode) else "analog",
                 "requirements": m.requirements,
                 "squelch": m.squelch,
+                "mobile": m.mobile,
             }
             if m.bandpass is not None:
                 res["bandpass"] = {"low_cut": m.bandpass.low_cut, "high_cut": m.bandpass.high_cut}

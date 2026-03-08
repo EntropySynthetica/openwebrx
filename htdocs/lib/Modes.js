@@ -39,6 +39,7 @@ var Mode = function(json){
     this.name = json.name;
     this.type = json.type;
     this.squelch = json.squelch;
+    this.mobile = json.mobile !== false;
     if (json.bandpass) {
         this.bandpass = json.bandpass;
     }

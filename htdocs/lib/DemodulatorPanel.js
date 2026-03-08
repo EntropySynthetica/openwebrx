@@ -52,8 +52,10 @@ function DemodulatorPanel(el) {
 };
 
 DemodulatorPanel.prototype.render = function() {
+    var onMobile = typeof isMobile === 'function' && isMobile();
     var normalModes = Modes.getModes()
-        .filter(function(m){ return m.type === 'analog'; });
+        .filter(function(m){ return m.type === 'analog'; })
+        .filter(function(m){ return !onMobile || m.mobile !== false; });
 
     var digiModes = Modes.getModes()
         .filter(function(m){ return m.type === 'digimode'; })

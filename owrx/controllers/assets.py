@@ -214,7 +214,7 @@ class CompiledAssetsController(GzipMixin, ModificationAwareController):
         contents = [self.getContents(f) for f in files]
 
         (content_type, encoding) = mimetypes.guess_type(profileName)
-        self.send_response("\n".join(contents), content_type=content_type, last_modified=modified, max_age=3600)
+        self.send_response("\n".join(contents), content_type=content_type, last_modified=modified, max_age=300)
 
     def getContents(self, file):
         with open(file) as f:
